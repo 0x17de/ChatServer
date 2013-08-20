@@ -24,13 +24,16 @@ Server::Server(int port) {
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
 
-    int bindTryCount = 5;
+    int bindTryCount = 25;
+    cout << "Trying to bind..." << endl;
     while (::bind(s_, (sockaddr*)&sa, sizeof(sa)) != 0) {
         if (--bindTryCount < 0)
             throw 0;
         sleep(1);
-        cout << "Trying to bind..." << endl;
+        cout << ".";
+        cout.flush();
     }
+    cout << endl;
     listen(s_, 3);
 
     FD_ZERO(&readFd_);

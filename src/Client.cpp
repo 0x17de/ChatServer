@@ -101,7 +101,7 @@ Command* Client::getCommand() {
 }
 
 void Client::send(string data) {
-    ::send(fd_, data.c_str(), data.length(), 0);
+    ::send(fd_, data.c_str(), data.length(), MSG_NOSIGNAL);
 }
 
 void Client::send(string cmd, string data) {
@@ -111,6 +111,6 @@ void Client::send(string cmd, string data) {
     ss << data;
     ss << ";\n";
     string s = ss.str();
-    ::send(fd_, s.c_str(), s.length(), 0);
+    ::send(fd_, s.c_str(), s.length(), MSG_NOSIGNAL);
 }
 
