@@ -86,8 +86,10 @@ Command* Client::getCommand() {
             start = n;
             trim = false;
         }
-        if (escape == true)
+        if (escape == true) {
+            escape = false;
             continue;
+        }
         if (c == '\\') {
             escape = true;
             continue;
