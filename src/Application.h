@@ -7,8 +7,8 @@
 
 class Application {
 private:
-    Server server;
-    bool running;
+    Server server_;
+    bool running_;
 public:
     Application();
     virtual ~Application();

@@ -8,8 +8,8 @@
 using namespace std;
 
 Application::Application() :
-    server(12321),
-    running(true)
+    server_(12321),
+    running_(true)
 {
     cout << "Server is starting" << endl;
 }
@@ -20,9 +20,9 @@ Application::~Application() {
 
 void Application::stop() {
     cout << "Server is stopping" << endl;
-    running = false;
+    running_ = false;
 }
 
 bool Application::run() {
-    return running && server.run();
+    return running_ && server_.run();
 }

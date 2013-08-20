@@ -3,9 +3,13 @@
 
 
 class Client {
+private:
+    int fd_;
 public:
-    Client();
+    Client(int fd);
     virtual ~Client();
+
+    int getFd();
 };
 
 #endif // CLIENT_H
