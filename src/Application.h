@@ -8,9 +8,13 @@
 class Application {
 private:
     Server server;
+    bool running;
 public:
     Application();
+    virtual ~Application();
+
     bool run();
+    void stop();
 };
 
 #endif // APPLICATION_H

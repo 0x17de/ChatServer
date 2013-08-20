@@ -6,8 +6,13 @@
 #else
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <arpa/inet.h>
 #endif
+#include <string.h>
+#include <iostream>
+
+using namespace std;
 
 Server::Server(int port) {
     s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -17,6 +22,11 @@ Server::Server(int port) {
     sa.sin_port = htons(port);
     bind(s, (sockaddr*)&sa, sizeof(sa));
     listen(s, 3);
+
+    FD_ZERO(&readFd);
+    FD_SET(s, &readFd);
+
+    countFd = s + 1;
 }
 
 Server::~Server() {
@@ -28,5 +38,15 @@ Server::~Server() {
 }
 
 bool Server::run() {
+    memcpy(&readFdCopy, &readFd, sizeof(fd_set));
+    timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    if (select(countFd, &readFdCopy, 0, 0, &tv) > 0) {
+        if (FD_ISSET(s, &readFd)) {
+            cout << "- New client" << endl;
+        }
+    }
+
     return true;
 }

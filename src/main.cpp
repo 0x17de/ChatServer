@@ -4,16 +4,18 @@
 
 using namespace std;
 
+Application app;
+
 void sigint(int sig) {
     static int sigcount = 5;
     if (--sigcount <= 0) {
         raise(SIGTERM);
     }
-    cout << "Trying to stop. (" << sigcount << " till SIGTERM)" << endl;
+    cout << endl << "Trying to stop. (" << sigcount << " till SIGTERM)" << endl;
+    app.stop();
 }
 
 int main(int argc, const char** argv) {
     signal(SIGINT, sigint);
-    Application app;
     while(app.run());
 }
