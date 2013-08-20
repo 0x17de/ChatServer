@@ -16,8 +16,17 @@ using namespace std;
 Client::Client(int fd) :
     streamlength_(0)
 {
-    cout << "New client" << endl;
     fd_ = fd;
+    static int id = 0;
+    id_ = id; ++id;
+    stringstream ss;
+    ss << "Guest_" << id_;
+    name_ = ss.str();
+    cout << "New client Id(" << id_ << ") Name: " << name_ << endl;
+
+    stringstream ss2;
+    ss2 << id_ << ":" << name_;
+    send("HELLO", ss2.str());
 }
 
 Client::~Client() {
@@ -31,6 +40,14 @@ Client::~Client() {
 
 int Client::getFd() {
     return fd_;
+}
+
+int Client::getId() {
+    return id_;
+}
+
+string Client::getName() {
+    return name_;
 }
 
 bool Client::recv() {

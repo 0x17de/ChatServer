@@ -48,15 +48,17 @@ Server::~Server() {
     #else
     close(s_);
     #endif
+    cout << "Server socket closed." << endl;
 }
 
-unique_ptr<Client>& Server::acceptClient() {
+Client* Server::acceptClient() {
     int cFd = accept(s_, 0, 0);
     FD_SET(cFd, &readFd_);
     countFd_ = max(countFd_, cFd + 1);
-    unique_ptr<Client> c;
-    c.reset(new Client(cFd));
-    clientList_.push_back(move(c));
+    Client* c = new Client(cFd);
+    unique_ptr<Client> uc;
+    uc.reset(c);
+    clientList_.push_back(move(uc));
     return c;
 }
 
@@ -103,7 +105,9 @@ bool Server::processCommands(unique_ptr<Client>& c) {
         if (cmdstr == "FAIL") {
             return false;
         } else if (cmdstr == "MSG") {
-            broadcast("MSG", cmd->getParamLine());
+            stringstream ss;
+            ss << "MSG:" << c->getId();
+            broadcast(ss.str(), cmd->getParamLine());
         }
     }
     return true;
@@ -112,17 +116,25 @@ bool Server::processCommands(unique_ptr<Client>& c) {
 bool Server::run() {
     if (select() > 0) {
         if (isset(s_)) {
-            cout << "- New client" << endl;
-            unique_ptr<Client>& c = acceptClient();
-            broadcast("JOIN", "USER");
+            Client* c = acceptClient();
+            cout << "- New client: " << c->getName() << endl;
+            stringstream ss;
+            ss << c->getId() << ":" << c->getName();
+            broadcast("JOIN", ss.str());
+            stringstream suserlist;
+            for(unique_ptr<Client>& subc : clientList_) {
+                suserlist << subc->getId() << ":" << subc->getName() << " ";
+            }
+            c->send("USERLIST", suserlist.str());
         }
         auto i = begin(clientList_);
         while(i != end(clientList_)) {
             unique_ptr<Client>& c = *i;
             if (isset(c)) {
                 if (!c->recv() || !processCommands(c)) {
+                    int cId = c->getId();
                     removeClient(i);
-                    broadcast("LEAVE", "USER");
+                    broadcast("LEAVE", to_string(cId));
                     continue;
                 }
             }

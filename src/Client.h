@@ -11,6 +11,9 @@ private:
     int fd_;
     std::stringstream ss_;
     int streamlength_;
+
+    int id_;
+    std::string name_;
 public:
     Client(int fd);
     virtual ~Client();
@@ -20,6 +23,9 @@ public:
     Command* getCommand();
     void send(std::string cmd, std::string data);
     void send(std::string data);
+
+    int getId();
+    std::string getName();
 };
 
 #endif // CLIENT_H
