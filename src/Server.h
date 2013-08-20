@@ -23,8 +23,11 @@ public:
     int isset(int fd);
     int isset(std::unique_ptr<Client>& c);
 
-    void acceptClient();
+    bool processCommands(std::unique_ptr<Client>& c);
+
+    std::unique_ptr<Client>& acceptClient();
     void removeClient(std::list<std::unique_ptr<Client> >::iterator& i);
+    void broadcast(std::string cmd, std::string data);
 };
 
 #endif // SERVER_H

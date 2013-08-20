@@ -47,13 +47,14 @@ Server::~Server() {
     #endif
 }
 
-void Server::acceptClient() {
+unique_ptr<Client>& Server::acceptClient() {
     int cFd = accept(s_, 0, 0);
     FD_SET(cFd, &readFd_);
     countFd_ = max(countFd_, cFd + 1);
     unique_ptr<Client> c;
     c.reset(new Client(cFd));
     clientList_.push_back(move(c));
+    return c;
 }
 
 int Server::select() {
@@ -79,36 +80,48 @@ void Server::removeClient(list<unique_ptr<Client> >::iterator& i) {
     i = clientList_.erase(i);
 }
 
+void Server::broadcast(string cmd, string data) {
+    stringstream ss;
+    ss << cmd;
+    ss << " ";
+    ss << data;
+    ss << ";\n";
+    string s = ss.str();
+    for(unique_ptr<Client>& c : clientList_) {
+        c->send(s);
+    }
+}
+
+bool Server::processCommands(unique_ptr<Client>& c) {
+    unique_ptr<Command> cmd;
+    while (cmd.reset(c->getCommand()), cmd != nullptr) {
+        string cmdstr = cmd->getCommand();
+        cout << "COMMAND: " <<  cmdstr << endl;
+        if (cmdstr == "FAIL") {
+            return false;
+        } else if (cmdstr == "MSG") {
+            broadcast("MSG", cmd->getParamLine());
+        }
+    }
+    return true;
+}
+
 bool Server::run() {
     if (select() > 0) {
-        cout << "SELECT" << endl;
         if (isset(s_)) {
             cout << "- New client" << endl;
-            acceptClient();
+            unique_ptr<Client>& c = acceptClient();
+            broadcast("JOIN", "USER");
         }
         auto i = begin(clientList_);
         while(i != end(clientList_)) {
             unique_ptr<Client>& c = *i;
             if (isset(c)) {
-                cout << "- Client msg:" << endl;
-
-                stringstream ss;
-                char buffer[1024];
-                while(true) {
-                    int res = recv(c->getFd(), buffer, 1023, MSG_DONTWAIT);
-                    if (res == 0) {
-                        removeClient(i);
-                        break;
-                    } else if (res < 0) {
-                        break;
-                    } else {
-                        buffer[res] = 0;
-                        ss << buffer;
-                    }
-                };
-                cout << ss.str() << endl;
-
-                cout << "- ENDMSG" << endl;
+                if (!c->recv() || !processCommands(c)) {
+                    removeClient(i);
+                    broadcast("LEAVE", "USER");
+                    continue;
+                }
             }
             ++i;
         }
