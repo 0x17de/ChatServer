@@ -11,6 +11,8 @@
 #endif
 #include <string.h>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <memory>
 
 using namespace std;
@@ -88,8 +90,25 @@ bool Server::run() {
         while(i != end(clientList_)) {
             unique_ptr<Client>& c = *i;
             if (isset(c)) {
-                cout << "- Client msg" << endl;
-                removeClient(i);
+                cout << "- Client msg:" << endl;
+
+                stringstream ss;
+                char buffer[1024];
+                while(true) {
+                    int res = recv(c->getFd(), buffer, 1023, MSG_DONTWAIT);
+                    if (res == 0) {
+                        removeClient(i);
+                        break;
+                    } else if (res < 0) {
+                        break;
+                    } else {
+                        buffer[res] = 0;
+                        ss << buffer;
+                    }
+                };
+                cout << ss.str() << endl;
+
+                cout << "- ENDMSG" << endl;
             }
             ++i;
         }
