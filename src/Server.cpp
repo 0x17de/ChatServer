@@ -130,6 +130,8 @@ bool Server::processCommands(unique_ptr<Client>& c) {
                 ss << "NAMECHANGE:" << c->getId();
                 broadcast(ss.str(), newname);
             }
+        } else if (cmdstr == "PING") {
+            c->send("PONG", "");
         } else if (cmdstr == "MSG") {
             stringstream ss;
             ss << "MSG:" << c->getId();
