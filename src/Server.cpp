@@ -21,6 +21,10 @@ using namespace std;
 
 #ifdef _WIN
 static int sockcount = 0;
+
+void unblockSocket(int fd) {
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+}
 #endif
 
 Server::Server(int port) {
@@ -33,6 +37,9 @@ Server::Server(int port) {
 	#endif
 
     s_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    #ifdef _WIN
+    unblockSocket(s_);
+    #endif
     sockaddr_in sa;
     sa.sin_addr.s_addr = INADDR_ANY;
     sa.sin_family = AF_INET;
@@ -74,6 +81,9 @@ Server::~Server() {
 
 Client* Server::acceptClient() {
     int cFd = accept(s_, 0, 0);
+    #ifdef _WIN
+    unblockSocket(cFd);
+    #endif
     FD_SET(cFd, &readFd_);
     countFd_ = max(countFd_, cFd + 1);
     Client* c = new Client(cFd);
