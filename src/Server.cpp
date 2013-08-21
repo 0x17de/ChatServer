@@ -23,7 +23,8 @@ using namespace std;
 static int sockcount = 0;
 
 void unblockSocket(int fd) {
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+	u_long mode = 1;
+	ioctlsocket(fd, FIONBIO, &mode); 
 }
 #endif
 
