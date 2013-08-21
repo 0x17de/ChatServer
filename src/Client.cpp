@@ -133,3 +133,7 @@ void Client::send(string cmd, string data) {
     ::send(fd_, s.c_str(), s.length(), MSG_NOSIGNAL);
 }
 
+void Client::setName(string newname) {
+    name_ = newname;
+}
+

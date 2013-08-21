@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 #include <memory>
 
 using namespace std;
@@ -103,7 +104,32 @@ bool Server::processCommands(unique_ptr<Client>& c) {
         string cmdstr = cmd->getCommand();
         cout << "COMMAND: " <<  cmdstr << endl;
         if (cmdstr == "FAIL") {
+            stringstream ss;
+            ss << c->getName() << " was kicked (Invalid client action).";
+            broadcast("MSG", ss.str());
             return false;
+        } else if (cmdstr == "NEWNAME") {
+            string newname = cmd->getParamLine();
+            string lowernewname = newname;
+            transform(begin(lowernewname), end(lowernewname), begin(lowernewname), ::tolower);
+            bool found = false;
+            for(unique_ptr<Client>& subc : clientList_) {
+                string subcname = subc->getName();
+                transform(begin(subcname), end(subcname), begin(subcname), ::tolower);
+                cout << "COMPARE: " << subcname << ":" << lowernewname << endl;
+                if (subcname == lowernewname) { // TODO check inside DB with password
+                    found = true; break;
+                }
+            }
+            if (found) {
+                c->send("NAMEFAIL", newname);
+            } else {
+                c->send("NAMEOK", newname);
+                c->setName(newname);
+                stringstream ss;
+                ss << "NAMECHANGE:" << c->getId();
+                broadcast(ss.str(), newname);
+            }
         } else if (cmdstr == "MSG") {
             stringstream ss;
             ss << "MSG:" << c->getId();

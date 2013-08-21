@@ -26,6 +26,7 @@ public:
 
     int getId();
     std::string getName();
+    void setName(std::string newname);
 };
 
 #endif // CLIENT_H
