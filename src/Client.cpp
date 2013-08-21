@@ -1,8 +1,10 @@
 #include "Client.h"
 
-
-#ifdef _WIN
+#if defined(_WIN32) || defined(_WIN64)
+#define _WIN
 #include <windows.h>
+#define MSG_DONTWAIT 0
+#define MSG_NOSIGNAL 0
 #else
 #include <unistd.h>
 #include <sys/socket.h>

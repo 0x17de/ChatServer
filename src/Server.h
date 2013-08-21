@@ -1,9 +1,15 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#if defined(_WIN32) || defined(_WIN64)
+#define _WIN
+#include <windows.h>
+#else
+#include <sys/types.h>
+#endif
+
 #include <list>
 #include <memory>
-#include <sys/types.h>
 
 #include "Client.h"
 

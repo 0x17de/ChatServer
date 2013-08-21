@@ -1,5 +1,9 @@
 #include "Application.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#define _WIN
+#endif
+
 #include <iostream>
 #include <list>
 

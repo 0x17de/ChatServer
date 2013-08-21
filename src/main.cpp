@@ -1,3 +1,9 @@
+#if defined(_WIN32) || defined(_WIN64)
+#define _WIN
+#include <Windows.h>
+#define SIGKILL SIGTERM
+#endif
+
 #include <iostream>
 #include <signal.h>
 #include "Application.h"

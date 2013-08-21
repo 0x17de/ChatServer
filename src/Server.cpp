@@ -3,6 +3,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #define _WIN
 #include <windows.h>
+#define sleep(x) Sleep(1000*x)
 #else
 #include <unistd.h>
 #include <sys/socket.h>
@@ -18,7 +19,19 @@
 
 using namespace std;
 
+#ifdef _WIN
+static int sockcount = 0;
+#endif
+
 Server::Server(int port) {
+	#ifdef _WIN
+	if (sockcount == 0) {
+		WSADATA wsaData;
+		WSAStartup(MAKEWORD(2,1), &wsaData);
+		++sockcount;
+	}
+	#endif
+
     s_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     sockaddr_in sa;
     sa.sin_addr.s_addr = INADDR_ANY;
@@ -50,6 +63,13 @@ Server::~Server() {
     close(s_);
     #endif
     cout << "Server socket closed." << endl;
+
+#ifdef _WIN
+	--sockcount;
+	if (sockcount == 0) {
+		WSACleanup();
+	}
+#endif
 }
 
 Client* Server::acceptClient() {
